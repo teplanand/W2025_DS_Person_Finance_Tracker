@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predict - Finance Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* Apply full-page gradient background */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4);
+            /* Blue to Cyan */
+            display: flex;
+            height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 220px;
+            background-color: #1e3a8a;
+            /* Dark blue */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sidebar button {
+            width: 180px;
+            margin: 8px 0;
+            padding: 12px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .sidebar button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .sidebar .logout-btn {
+            margin-top: auto;
+            margin-bottom: 30px;
+            background-color: #dc2626;
+        }
+
+        .sidebar .logout-btn:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            background-color: white;
+            border-radius: 20px 0 0 20px;
+            margin: 20px 0 20px 0;
+            margin-right: 20px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #1e3a8a;
+            margin: 0;
+        }
+
+        #user-info {
+            font-size: 1.1rem;
+        }
+
+        /* Cards for sections */
+        .card {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #f1f5f9;
+            border-radius: 8px 8px 0 0;
+            padding: 15px 20px;
+        }
+
+        .card-header h2, .card-header h4 {
+            color: #1e3a8a;
+            margin: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            outline: none;
+        }
+
+        /* Button styling */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #0284c7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0369a1;
+        }
+
+        .btn-success {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #059669;
+        }
+
+        /* Alert styling */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .alert-info {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .alert-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .alert-warning {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .alert-danger {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Progress bar styling */
+        .progress {
+            height: 25px;
+            background-color: #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.3s ease;
+        }
+
+        .bg-success {
+            background-color: #10b981;
+        }
+
+        .bg-warning {
+            background-color: #f59e0b;
+        }
+
+        .bg-danger {
+            background-color: #ef4444;
+        }
+
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Custom elements from the prediction page */
+        .prediction-card {
+            transition: all 0.3s ease;
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .insight-item {
+            border-left: 4px solid #6c757d;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+
+        .insight-item.trend-up {
+            border-left-color: #dc3545;
+        }
+
+        .insight-item.trend-down {
+            border-left-color: #28a745;
+        }
+
+        .insight-item.top {
+            border-left-color: #0d6efd;
+        }
+
+        .model-info {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Two column layout */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        .col-md-6 {
+            flex: 0 0 calc(50% - 30px);
+            max-width: calc(50% - 30px);
+            padding: 0 15px;
+        }
+
+        .col-md-4 {
+            flex: 0 0 calc(33.33% - 30px);
+            max-width: calc(33.33% - 30px);
+            padding: 0 15px;
+        }
+
+        .col-md-12 {
+            flex: 0 0 100%;
+            max-width: 100%;
+            padding: 0 15px;
+        }
+
+        /* Summary items */
+        .summary-item {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #0d6efd;
+        }
+
+        /* Hide elements */
+        .d-none {
+            display: none;
+        }
+
+        /* Text utilities */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-primary {
+            color: #0d6efd;
+        }
+
+        .text-muted {
+            color: #6c757d;
+        }
+
+        .small {
+            font-size: 0.875rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 15px;
+        }
+
+        .mb-4 {
+            margin-bottom: 20px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #e2e8f0;
+            margin: 15px 0;
+        }
+
+        /* List styling */
+        .list-unstyled {
+            list-style: none;
+            padding-left: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Finance Tracker</h3>
+        </div>
+        <button onclick="location.href='/dashboard_page'"><strong>Dashboard</strong></button>
+        <button onclick="location.href='/monthly_report'"><strong>Monthly Report</strong></button>
+        <button onclick="location.href='/ml_prediction'"><strong>Predict</strong></button>
+        <button onclick="location.href='/logout'" class="logout-btn"><strong>Logout</strong></button>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Monthly Spending Predictions</h1>
+            <div id="user-info"></div>
+        </div>
+        
+        <div class="row">
+            <!-- Monthly Prediction Section -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Predict Monthly Spending</h2>
+                    </div>
+                    <div class="card-body">
+                        <form id="train-monthly-model-form" class="mb-4">
+                            <div class="mb-3">
+                                <label for="train-category" class="form-label">Select Category to Train Model</label>
+                                <select class="form-select" id="train-category" name="category" required>
+                                    <option value="">Select a category</option>
+                                    <!-- Categories will be populated dynamically -->
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Train Monthly Model</button>
+                            <div id="train-result" class="mt-2"></div>
+                        </form>
+
+                        <hr>
+
+                        <form id="monthly-prediction-form">
+                            <div class="mb-3">
+                                <label for="prediction-category" class="form-label">Category</label>
+                                <select class="form-select" id="prediction-category" name="category" required>
+                                    <option value="">Select a category</option>
+                                    <!-- Categories will be populated dynamically -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="prediction-month" class="form-label">Month</label>
+                                <input type="month" class="form-control" id="prediction-month" name="year_month" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Get Monthly Prediction</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div id="prediction-result" class="card prediction-card mb-4 d-none">
+                    <div class="card-body">
+                        <h5 class="card-title">Monthly Spending Prediction</h5>
+                        <div id="prediction-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monthly Trends Section -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2>Monthly Spending Trends</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="trends-loading">Loading monthly trends...</div>
+                        <div id="trends-content" class="d-none">
+                            <div class="mb-3">
+                                <label for="trend-category" class="form-label">Select Category</label>
+                                <select class="form-select" id="trend-category">
+                                    <option value="all">All Categories</option>
+                                    <!-- Categories will be added dynamically -->
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="monthly-trend-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Spending Data -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2>Your Monthly Spending Data</h2>
+            </div>
+            <div class="card-body">
+                <div id="monthly-data-loading">Loading monthly data...</div>
+                <div id="monthly-data" class="d-none">
+                    <div class="row" id="monthly-summary">
+                        <!-- Monthly data summary will be inserted here -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info" id="reliability-info">
+                            <strong>Note:</strong> ML predictions improve with more months of data. For best results, we recommend having at least 6 months of transaction history.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Set default month to current month
+            const now = new Date();
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            $('#prediction-month').val(currentMonth);
+            
+            // Load monthly data right away
+            loadMonthlyData();
+            
+            // Display user info
+            fetch('/dashboard_data')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.error) {
+                        document.getElementById('user-info').innerHTML = `
+                            <p>Welcome, <strong>${data.user.name}</strong>!</p>
+                        `;
+                    }
+                })
+                .catch(error => console.error('Error fetching user data:', error));
+            
+            // Train monthly model form submission
+            $('#train-monthly-model-form').submit(function(e) {
+                e.preventDefault();
+                
+                const category = $('#train-category').val();
+                if (!category) {
+                    $('#train-result').html('<div class="alert alert-warning">Please select a category</div>');
+                    return;
+                }
+                
+                $('#train-result').html('<div class="alert alert-info">Training monthly model for ' + category + '...</div>');
+                
+                $.ajax({
+                    url: '/train_monthly_model',
+                    type: 'POST',
+                    data: {
+                        category: category
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            $('#train-result').html(
+                                `<div class="alert alert-success">
+                                    ${response.message} 
+                                    <br>
+                                    <small>Model accuracy: ${response.accuracy}</small>
+                                </div>`
+                            );
+                        } else {
+                            $('#train-result').html(`<div class="alert alert-warning">${response.message}</div>`);
+                        }
+                    },
+                    error: function() {
+                        $('#train-result').html('<div class="alert alert-danger">Error training model. Please try again.</div>');
+                    }
+                });
+            });
+            
+            // Monthly prediction form submission
+            $('#monthly-prediction-form').submit(function(e) {
+                e.preventDefault();
+                
+                const category = $('#prediction-category').val();
+                const yearMonth = $('#prediction-month').val();
+                
+                if (!category || !yearMonth) {
+                    $('#prediction-content').html('<div class="alert alert-warning">Please select both category and month</div>');
+                    $('#prediction-result').removeClass('d-none');
+                    return;
+                }
+                
+                $('#prediction-content').html('<div class="alert alert-info">Generating monthly prediction...</div>');
+                $('#prediction-result').removeClass('d-none');
+                
+                $.ajax({
+                    url: '/predict_monthly_spending',
+                    type: 'POST',
+                    data: {
+                        category: category,
+                        year_month: yearMonth
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Calculate percentage of budget used
+                            const percentUsed = Math.min(100, Math.round((response.current_spending / response.prediction) * 100));
+                            
+                            $('#prediction-content').html(`
+                                <div class="text-center mb-3">
+                                    <h3 class="text-primary">$${response.prediction.toFixed(2)}</h3>
+                                    <p>Predicted monthly spending for ${response.category} in ${response.month} ${response.year}</p>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Current Progress</h5>
+                                        <p>You've spent $${response.current_spending.toFixed(2)} so far this month</p>
+                                        <div class="progress mb-3">
+                                            <div class="progress-bar ${percentUsed > 80 ? 'bg-danger' : percentUsed > 60 ? 'bg-warning' : 'bg-success'}" 
+                                                role="progressbar" 
+                                                style="width: ${percentUsed}%"
+                                                aria-valuenow="${percentUsed}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="100">
+                                                ${percentUsed}%
+                                            </div>
+                                        </div>
+                                        <p class="mb-0">
+                                            <strong>Remaining budget:</strong> $${response.remaining.toFixed(2)}
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <small class="text-muted">
+                                        This prediction is based on your historical spending patterns for ${response.category}.
+                                    </small>
+                                </div>
+                            `);
+                        } else {
+                            $('#prediction-content').html(`<div class="alert alert-warning">${response.message}</div>`);
+                        }
+                    },
+                    error: function() {
+                        $('#prediction-content').html('<div class="alert alert-danger">Error getting prediction. Please try again.</div>');
+                    }
+                });
+            });
+            
+            // Function to load monthly data
+            function loadMonthlyData() {
+                $.ajax({
+                    url: '/get_monthly_data',
+                    type: 'GET',
+                    success: function(response) {
+                        $('#monthly-data-loading').addClass('d-none');
+                        $('#monthly-data').removeClass('d-none');
+                        $('#trends-loading').addClass('d-none');
+                        $('#trends-content').removeClass('d-none');
+                        
+                        if (response.success && response.data.length > 0) {
+                            // Populate category dropdowns
+                            const trainCategorySelect = $('#train-category');
+                            const predictionCategorySelect = $('#prediction-category');
+                            const trendCategorySelect = $('#trend-category');
+                            
+                            trainCategorySelect.empty();
+                            predictionCategorySelect.empty();
+                            trendCategorySelect.empty();
+                            
+                            trainCategorySelect.append('<option value="">Select a category</option>');
+                            predictionCategorySelect.append('<option value="">Select a category</option>');
+                            trendCategorySelect.append('<option value="all">All Categories</option>');
+                            
+                            response.categories.forEach(category => {
+                                trainCategorySelect.append(`<option value="${category}">${category}</option>`);
+                                predictionCategorySelect.append(`<option value="${category}">${category}</option>`);
+                                trendCategorySelect.append(`<option value="${category}">${category}</option>`);
+                            });
+                            
+                            // Display monthly summary
+                            const recentMonths = response.data.slice(-3); // Last 3 months
+                            let summaryHtml = '';
+                            
+                            recentMonths.forEach(month => {
+                                summaryHtml += `
+                                    <div class="col-md-4">
+                                        <div class="summary-item">
+                                            <h5>${month.month_name}</h5>
+                                            <h3 class="text-primary">$${month.total.toFixed(2)}</h3>
+                                            <p>Total Spending</p>
+                                            <hr>
+                                            <div class="small">
+                                                <strong>Top Categories:</strong>
+                                                <ul class="list-unstyled">
+                                `;
+                                
+                                // Get top 3 categories
+                                const topCategories = Object.entries(month.categories)
+                                    .sort((a, b) => b[1] - a[1])
+                                    .slice(0, 3);
+                                
+                                topCategories.forEach(([category, amount]) => {
+                                    summaryHtml += `
+                                        <li>${category}: $${amount.toFixed(2)}</li>
+                                    `;
+                                });
+                                
+                                summaryHtml += `
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            
+                            $('#monthly-summary').html(summaryHtml);
+                            
+                            // Create chart
+                            createMonthlyChart(response.data, 'all');
+                            
+                            // Add event listener for category selection
+                            $('#trend-category').change(function() {
+                                const selectedCategory = $(this).val();
+                                createMonthlyChart(response.data, selectedCategory);
+                            });
+                            
+                        } else {
+                            $('#monthly-data').html('<div class="alert alert-info">No monthly data available yet. Add more transactions to see your spending patterns.</div>');
+                            $('#trends-content').html('<div class="alert alert-info">Not enough data to show trends.</div>');
+                        }
+                    },
+                    error: function() {
+                        $('#monthly-data-loading').addClass('d-none');
+                        $('#monthly-data').removeClass('d-none').html('<div class="alert alert-danger">Error loading monthly data. Please try again.</div>');
+                        $('#trends-loading').addClass('d-none');
+                        $('#trends-content').removeClass('d-none').html('<div class="alert alert-danger">Error loading trends. Please try again.</div>');
+                    }
+                });
+            }
+            
+            // Function to create monthly chart
+            function createMonthlyChart(data, category) {
+                const ctx = document.getElementById('monthly-trend-chart').getContext('2d');
+                
+                // Clear any existing chart
+                if (window.monthlyChart) {
+                    window.monthlyChart.destroy();
+                }
+                
+                const labels = data.map(month => month.month_name);
+                const datasets = [];
+                
+                if (category === 'all') {
+                    // Show all categories
+                    const allCategories = new Set();
+                    data.forEach(month => {
+                        Object.keys(month.categories).forEach(cat => allCategories.add(cat));
+                    });
+                    
+                    // Create color palette
+                    const colors = [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(199, 199, 199, 0.7)',
+                        'rgba(83, 102, 255, 0.7)',
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ];
+                    
+                    // Add dataset for total spending
+                    datasets.push({
+                        label: 'Total',
+                        data: data.map(month => month.total),
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                        borderColor: 'rgba(0, 123, 255, 1)',
+                        borderWidth: 2,
+                        type: 'line',
+                        fill: false,
+                        tension: 0.1
+                    });
+                    
+                    // Add top 5 categories as bars
+                    const allCategoriesArray = Array.from(allCategories);
+                    const topCategories = allCategoriesArray
+                        .map(cat => {
+                            const total = data.reduce((sum, month) => sum + (month.categories[cat] || 0), 0);
+                            return { category: cat, total };
+                        })
+                        .sort((a, b) => b.total - a.total)
+                        .slice(0, 5)
+                        .map(item => item.category);
+                    
+                    topCategories.forEach((cat, index) => {
+                        datasets.push({
+                            label: cat,
+                            data: data.map(month => month.categories[cat] || 0),
+                            backgroundColor: colors[index % colors.length],
+                            borderColor: colors[index % colors.length].replace('0.7', '1'),
+                            borderWidth: 1
+                        });
+                    });
+                } else {
+                    // Show only selected category
+                    datasets.push({
+                        label: category,
+                        data: data.map(month => month.categories[category] || 0),
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    });
+                }
+                
+                window.monthlyChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Amount ($)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Month'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: category === 'all' ? 'Monthly Spending by Category' : `Monthly Spending for ${category}`,
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += '$' + context.parsed.y.toFixed(2);
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Report - Finance Tracker</title>
+    <style>
+        /* Apply full-page gradient background */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #3b82f6, #06b6d4); /* Blue to Cyan */
+            display: flex;
+            height: 100vh;
+            color: #1e293b;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 220px;
+            background-color: #1e3a8a; /* Dark blue */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-header {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .sidebar button {
+            width: 180px;
+            margin: 8px 0;
+            padding: 12px;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+
+        .sidebar button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .sidebar .logout-btn {
+            margin-top: auto;
+            margin-bottom: 30px;
+            background-color: #dc2626;
+        }
+
+        .sidebar .logout-btn:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            background-color: white;
+            border-radius: 20px 0 0 20px;
+            margin: 20px 0 20px 0;
+            margin-right: 20px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: #1e3a8a;
+            margin: 0;
+        }
+
+        /* Month selector */
+        .month-selector {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .month-selector select {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 100px;
+        }
+
+        .month-selector button {
+            padding: 10px 15px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .month-selector button:hover {
+            background-color: #2563eb;
+        }
+
+        /* Summary cards */
+        .summary-cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            flex: 1;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .card .amount {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .card.income .amount {
+            color: #10b981; /* Green */
+        }
+
+        .card.expense .amount {
+            color: #ef4444; /* Red */
+        }
+
+        .card.balance .amount {
+            color: #3b82f6; /* Blue */
+        }
+
+        /* Chart sections */
+        .chart-section {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-section h2 {
+            color: #1e3a8a;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Expenses by category section */
+        .category-expenses {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-chart {
+            flex: 1;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .category-list {
+            flex: 1;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Category table */
+        .category-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .category-table th,
+        .category-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .category-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .category-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* Transactions table */
+        .transactions-section {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .transactions-section h2 {
+            color: #1e3a8a;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transactions-table th,
+        .transactions-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .transactions-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .transactions-table tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .income-amount {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .expense-amount {
+            color: #ef4444;
+            font-weight: 500;
+        }
+
+        .savings-label {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        /* Canvas for charts */
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Loading indicator */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+        }
+
+        /* No data message */
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #64748b;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>Finance Tracker</h3>
+        </div>
+        <button onclick="location.href='/dashboard_page'"><strong>Dashboard</strong></button>
+        <button onclick="location.href='/monthly_report'"><strong>Monthly Report</strong></button>
+        <button onclick="location.href='/ml_prediction'"><strong>Predict</strong></button>
+        <button onclick="location.href='/logout'" class="logout-btn"><strong>Logout</strong></button>
+    </div>
+    
+    <div class="main-content">
+        <div class="page-header">
+            <h1>Monthly Report</h1>
+        </div>
+        
+        <div class="month-selector">
+            <select id="month-select">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+            <select id="year-select">
+                <!-- Will be populated with JavaScript -->
+            </select>
+            <button id="apply-filter">Apply Filter</button>
+        </div>
+        
+        <div class="summary-cards">
+            <div class="card income">
+                <h3>Monthly Income</h3>
+                <div class="amount" id="income-amount">$0.00</div>
+            </div>
+            <div class="card expense">
+                <h3>Monthly Expenses</h3>
+                <div class="amount" id="expense-amount">$0.00</div>
+            </div>
+            <div class="card balance">
+                <h3>Monthly Savings</h3>
+                <div class="amount" id="balance-amount">$0.00</div>
+            </div>
+        </div>
+
+        <div class="category-expenses">
+            <div class="category-chart">
+                <h2>Expenses by Category</h2>
+                <div class="chart-container">
+                    <canvas id="category-chart"></canvas>
+                </div>
+            </div>
+            <div class="category-list">
+                <h2>Category Breakdown</h2>
+                <table class="category-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>% of Expenses</th>
+                        </tr>
+                    </thead>
+                    <tbody id="category-breakdown">
+                        <tr>
+                            <td colspan="3" class="loading">Loading category data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="chart-section">
+            <h2>Savings vs. Expenses</h2>
+            <div class="chart-container">
+                <canvas id="savings-expenses-chart"></canvas>
+            </div>
+        </div>
+        
+        <div class="transactions-section">
+            <h2>All Transactions</h2>
+            <table class="transactions-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody id="transactions-list">
+                    <tr>
+                        <td colspan="4" class="loading">Loading transactions...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Include Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the year dropdown with current year and past 2 years
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            
+            for (let year = currentYear; year >= currentYear - 2; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            // Set default month and year to current month/year
+            const currentMonth = new Date().getMonth() + 1; // getMonth() is 0-indexed
+            document.getElementById('month-select').value = currentMonth;
+            document.getElementById('year-select').value = currentYear;
+            
+            // Initial load of data
+            loadMonthlyData(currentMonth, currentYear);
+            
+            // Set up filter button
+            document.getElementById('apply-filter').addEventListener('click', function() {
+                const selectedMonth = document.getElementById('month-select').value;
+                const selectedYear = document.getElementById('year-select').value;
+                loadMonthlyData(selectedMonth, selectedYear);
+            });
+        });
+
+        
+        
+        // Function to load monthly data
+        function loadMonthlyData(month, year) {
+            // Load monthly summary
+            fetch(`/fetch_monthly_summary?month=${month}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update summary cards
+                    document.getElementById('income-amount').textContent = `$${data.income.toFixed(2)}`;
+                    document.getElementById('expense-amount').textContent = `$${data.expenses.toFixed(2)}`;
+                    document.getElementById('balance-amount').textContent = `$${data.savings.toFixed(2)}`;
+                })
+                .catch(error => {
+                    console.error('Error loading monthly summary:', error);
+                });
+            
+            // Load category trends
+            fetch(`/fetch_category_trends?month=${month}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Create arrays for chart data
+                    const categories = [];
+                    const amounts = [];
+                    let totalExpenses = 0;
+                    
+                    // Filter out savings categories for expenses chart
+                    const expensesData = data.filter(item => 
+                        !['Emergency Fund', 'Retirement', 'Investments', 
+                         'Vacation', 'General Savings', 'Savings'].includes(item.category));
+                    
+                    // Add up total expenses
+                    expensesData.forEach(item => {
+                        totalExpenses += item.amount;
+                    });
+                    
+                    // Generate chart data and table rows
+                    expensesData.forEach(item => {
+                        categories.push(item.category);
+                        amounts.push(item.amount);
+                    });
+                    
+                    // Update category breakdown table
+                    const categoryTable = document.getElementById('category-breakdown');
+                    
+                    if (expensesData.length === 0) {
+                        categoryTable.innerHTML = '<tr><td colspan="3" class="no-data">No expense data for this month.</td></tr>';
+                    } else {
+                        let tableHTML = '';
+                        expensesData.forEach(item => {
+                            const percentage = (item.amount / totalExpenses * 100).toFixed(1);
+                            tableHTML += `
+                                <tr>
+                                    <td>${item.category}</td>
+                                    <td>$${item.amount.toFixed(2)}</td>
+                                    <td>${percentage}%</td>
+                                </tr>
+                            `;
+                        });
+                        categoryTable.innerHTML = tableHTML;
+                    }
+                    
+                    // Create the category pie chart
+                    createCategoryChart(categories, amounts);
+                    
+                    // Create the savings vs expenses chart (this is a simplified version)
+                    // In a real app, you'd want to fetch data for multiple months
+                    createSavingsExpensesChart(month, year);
+                })
+                .catch(error => {
+                    console.error('Error loading category trends:', error);
+                    document.getElementById('category-breakdown').innerHTML = 
+                        '<tr><td colspan="3" class="no-data">Error loading category data.</td></tr>';
+                });
+            
+            // Load transactions
+            fetch(`/fetch_all_transactions?month=${month}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    const transactionsContainer = document.getElementById('transactions-list');
+                    
+                    if (data.length === 0) {
+                        transactionsContainer.innerHTML = '<tr><td colspan="4" class="no-data">No transactions found for this month.</td></tr>';
+                        return;
+                    }
+                    
+                    let tableHTML = '';
+                    
+                    data.forEach(transaction => {
+                        const amount = parseFloat(transaction.amount);
+                        const formattedAmount = `$${Math.abs(amount).toFixed(2)}`;
+                        const amountClass = amount >= 0 ? 'income-amount' : 'expense-amount';
+                        
+                        // Determine transaction type
+                        let transactionType = amount >= 0 ? 'Income' : 'Expense';
+                        if (transaction.is_saving) {
+                            transactionType = '<span class="savings-label">Savings</span>';
+                        }
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>${formatDate(transaction.date)}</td>
+                                <td>${transaction.category}</td>
+                                <td class="${amountClass}">${formattedAmount}</td>
+                                <td>${transactionType}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    transactionsContainer.innerHTML = tableHTML;
+                })
+                .catch(error => {
+                    console.error('Error loading transactions:', error);
+                    document.getElementById('transactions-list').innerHTML = 
+                        '<tr><td colspan="4" class="no-data">Error loading transactions.</td></tr>';
+                });
+        }
+        
+        // Function to create the category pie chart
+        function createCategoryChart(categories, amounts) {
+            const ctx = document.getElementById('category-chart').getContext('2d');
+            
+            // Check if a chart already exists and destroy it
+            if (window.categoryChart) {
+                window.categoryChart.destroy();
+            }
+            
+            // Generate a color for each category
+            const colors = generateColors(categories.length);
+            
+            window.categoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: amounts,
+                        backgroundColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Function to create the savings vs expenses chart
+        function createSavingsExpensesChart(month, year) {
+            // In a real implementation, you would fetch data for multiple months
+            // Here we'll just use the current month's data
+            fetch(`/fetch_monthly_summary?month=${month}&year=${year}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('savings-expenses-chart').getContext('2d');
+                    
+                    // Check if a chart already exists and destroy it
+                    if (window.savingsExpensesChart) {
+                        window.savingsExpensesChart.destroy();
+                    }
+                    
+                    // Get month name
+                    const monthNames = [
+                        'January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'
+                    ];
+                    const monthName = monthNames[month - 1];
+                    
+                    window.savingsExpensesChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: [monthName],
+                            datasets: [
+                                {
+                                    label: 'Income',
+                                    data: [data.income],
+                                    backgroundColor: 'rgba(16, 185, 129, 0.7)', // Green
+                                    borderColor: 'rgba(16, 185, 129, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Expenses',
+                                    data: [data.expenses],
+                                    backgroundColor: 'rgba(239, 68, 68, 0.7)', // Red
+                                    borderColor: 'rgba(239, 68, 68, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Savings',
+                                    data: [data.savings],
+                                    backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue
+                                    borderColor: 'rgba(59, 130, 246, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Amount ($)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error creating savings vs expenses chart:', error);
+                });
+        }
+        
+        // Function to generate colors for chart
+        function generateColors(count) {
+            const colors = [];
+            const baseColors = [
+                'rgba(54, 162, 235, 0.7)',   // Blue
+                'rgba(255, 99, 132, 0.7)',   // Red
+                'rgba(255, 206, 86, 0.7)',   // Yellow
+                'rgba(75, 192, 192,.7)',     // Green
+                'rgba(153, 102, 255, 0.7)',  // Purple
+                'rgba(255, 159, 64, 0.7)',   // Orange
+                'rgba(199, 199, 199, 0.7)',  // Gray
+                'rgba(83, 102, 255, 0.7)',   // Indigo
+                'rgba(255, 99, 255, 0.7)',   // Pink
+                'rgba(89, 205, 150, 0.7)'    // Teal
+            ];
+            
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            
+            return colors;
+        }
+        
+        // Format date for better display
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    </script>
+</body>
+</html>
